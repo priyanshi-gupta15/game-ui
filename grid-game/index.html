@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grid Navigator — Retro Grid Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --panel: #12121c;
+      --border: #1e1e2e;
+      --blue: #00d4ff;
+      --red: #ff3366;
+      --green: #39ff14;
+      --gold: #ffd700;
+      --white: #e0e0e0;
+      --muted: #555570;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER / TITLE ── */
+    .game-header {
+      text-align: center;
+      padding: 20px 20px 10px;
+    }
+    .game-header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 2.4rem;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .game-header p { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.2em; margin-top: 4px; }
+
+    /* ── SETUP PANEL ── */
+    .setup-panel {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      flex-wrap: wrap;
+    }
+    .setup-panel label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      color: var(--blue);
+      letter-spacing: 0.1em;
+    }
+    .setup-panel input[type="number"] {
+      width: 70px;
+      padding: 8px 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      text-align: center;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .setup-panel input[type="number"]:focus { border-color: var(--blue); box-shadow: 0 0 10px rgba(0,212,255,0.2); }
+
+    .btn {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      padding: 10px 24px;
+      border: 2px solid;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.25s;
+      background: transparent;
+    }
+    .btn-blue { color: var(--blue); border-color: var(--blue); }
+    .btn-blue:hover { background: var(--blue); color: var(--bg); box-shadow: 0 0 20px rgba(0,212,255,0.4); }
+    .btn-green { color: var(--green); border-color: var(--green); }
+    .btn-green:hover { background: var(--green); color: var(--bg); box-shadow: 0 0 20px rgba(57,255,20,0.4); }
+    .btn-red { color: var(--red); border-color: var(--red); }
+    .btn-red:hover { background: var(--red); color: var(--bg); box-shadow: 0 0 20px rgba(255,51,102,0.4); }
+    .btn-gold { color: var(--gold); border-color: var(--gold); }
+    .btn-gold:hover { background: var(--gold); color: var(--bg); box-shadow: 0 0 20px rgba(255,215,0,0.4); }
+
+    .pattern-toggle {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .pattern-toggle .active-pattern { background: var(--blue); color: var(--bg); }
+
+    /* ── HUD ── */
+    .hud {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 12px 20px;
+      margin: 0 auto 10px;
+      max-width: 700px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .hud-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .hud-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .hud-value {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+    .hud-lives { color: var(--red); }
+    .hud-timer { color: var(--gold); }
+    .hud-score { color: var(--blue); }
+    .hud-level { color: var(--green); }
+
+    .hearts { font-size: 1.2rem; letter-spacing: 4px; }
+
+    /* ── GRID ── */
+    .grid-wrapper {
+      display: flex;
+      justify-content: center;
+      padding: 10px 20px 30px;
+      overflow: auto;
+    }
+    .grid-container {
+      display: inline-grid;
+      gap: 2px;
+      background: #0d0d15;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      padding: 2px;
+    }
+    .cell {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.45rem;
+      color: rgba(255,255,255,0.15);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+      min-width: 18px;
+      min-height: 18px;
+    }
+    .cell:hover:not(.cell-player) { transform: scale(1.15); z-index: 2; }
+
+    .cell-empty { background: #16161f; }
+    .cell-blue { background: var(--blue); box-shadow: 0 0 8px rgba(0,212,255,0.5); color: rgba(0,0,0,0.3); }
+    .cell-red { background: var(--red); box-shadow: 0 0 8px rgba(255,51,102,0.5); color: rgba(0,0,0,0.3); }
+    .cell-green { background: var(--green); box-shadow: 0 0 6px rgba(57,255,20,0.3); color: rgba(0,0,0,0.3); }
+    .cell-player {
+      background: var(--gold) !important;
+      box-shadow: 0 0 16px rgba(255,215,0,0.8), inset 0 0 8px rgba(255,255,255,0.3) !important;
+      color: #000 !important;
+      font-weight: 900;
+      font-size: 0.8rem !important;
+      animation: pulse-player 1s ease-in-out infinite;
+      z-index: 5;
+      border-radius: 50%;
+    }
+    @keyframes pulse-player {
+      0%, 100% { box-shadow: 0 0 16px rgba(255,215,0,0.8); }
+      50% { box-shadow: 0 0 30px rgba(255,215,0,1), 0 0 50px rgba(255,215,0,0.4); }
+    }
+
+    .cell-flash {
+      animation: flash-red 0.15s linear 4;
+    }
+    @keyframes flash-red {
+      0%, 100% { background: var(--red); }
+      50% { background: #fff; }
+    }
+
+    /* adjacency highlight */
+    .cell-adjacent { outline: 2px solid rgba(255,215,0,0.4); outline-offset: -2px; }
+
+    /* ── OVERLAY ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      gap: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+    .overlay.visible { opacity: 1; pointer-events: all; }
+    .overlay h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .overlay p { font-size: 1.1rem; color: var(--muted); letter-spacing: 0.1em; }
+    .overlay .win-text { color: var(--green); text-shadow: 0 0 30px rgba(57,255,20,0.6); }
+    .overlay .lose-text { color: var(--red); text-shadow: 0 0 30px rgba(255,51,102,0.6); }
+    .overlay .level-text { color: var(--blue); text-shadow: 0 0 30px rgba(0,212,255,0.6); }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      padding: 10px;
+      flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--muted); }
+    .legend-swatch {
+      width: 14px; height: 14px; border-radius: 3px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .game-header h1 { font-size: 1.4rem; }
+      .hud { gap: 16px; padding: 10px; }
+      .hud-value { font-size: 1rem; }
+      .setup-panel { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-header">
+    <h1>Grid Navigator</h1>
+    <p>Collect &bull; Survive &bull; Conquer</p>
+  </div>
+
+  <!-- Setup Panel -->
+  <div class="setup-panel" id="setupPanel">
+    <label>ROWS</label>
+    <input type="number" id="rowsInput" value="10" min="10" />
+    <label>COLS</label>
+    <input type="number" id="colsInput" value="10" min="10" />
+    <button class="btn btn-blue" onclick="generateGrid()">Generate Grid</button>
+    <div class="pattern-toggle">
+      <button class="btn btn-green active-pattern" id="btnP1" onclick="setPattern(1)">Pattern 1</button>
+      <button class="btn btn-green" id="btnP2" onclick="setPattern(2)">Pattern 2</button>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--gold)"></div> Player</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--blue)"></div> Points</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--red)"></div> Danger</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--green)"></div> Safe Zone</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#16161f; border: 1px solid #333"></div> Empty</div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud" id="hud" style="display:none;">
+    <div class="hud-item">
+      <span class="hud-label">Lives</span>
+      <span class="hud-value hud-lives" id="hudLives">
+        <span class="hearts">❤❤❤❤❤</span>
+      </span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Timer</span>
+      <span class="hud-value hud-timer" id="hudTimer">0:30</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Score</span>
+      <span class="hud-value hud-score" id="hudScore">0 / 0</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Level</span>
+      <span class="hud-value hud-level" id="hudLevel">1</span>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrapper">
+    <div class="grid-container" id="gridContainer"></div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay">
+    <h2 id="overlayTitle"></h2>
+    <p id="overlayMsg"></p>
+    <button class="btn btn-gold" id="overlayBtn" onclick="playAgain()">Play Again</button>
+  </div>
+
+<script>
+  // ═══════════════════════════════════════════
+  // GAME STATE
+  // ═══════════════════════════════════════════
+  let ROWS = 10, COLS = 10;
+  let currentPattern = 1;
+  let grid = [];            // 2D array of tile types: 'empty','blue','red','green'
+  let playerR = 0, playerC = 0;
+  let prevR = 0, prevC = 0;
+  let lives = 5;
+  let score = 0;
+  let totalBlue = 0;
+  let timeLeft = 30;
+  let timerInterval = null;
+  let gameStarted = false;
+  let gameOver = false;
+  let currentLevel = 1;
+
+  const TILE = { EMPTY: 'empty', BLUE: 'blue', RED: 'red', GREEN: 'green' };
+
+  // ═══════════════════════════════════════════
+  // SETUP
+  // ═══════════════════════════════════════════
+  function setPattern(p) {
+    currentPattern = p;
+    document.getElementById('btnP1').classList.toggle('active-pattern', p === 1);
+    document.getElementById('btnP2').classList.toggle('active-pattern', p === 2);
+  }
+
+  function generateGrid() {
+    ROWS = Math.max(10, parseInt(document.getElementById('rowsInput').value) || 10);
+    COLS = Math.max(10, parseInt(document.getElementById('colsInput').value) || 10);
+    document.getElementById('rowsInput').value = ROWS;
+    document.getElementById('colsInput').value = COLS;
+    currentLevel = currentPattern;
+    resetGame();
+  }
+
+  function resetGame() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    lives = 5;
+    score = 0;
+    timeLeft = 30;
+    gameStarted = false;
+    gameOver = false;
+
+    if (currentLevel === 1) {
+      buildPattern1();
+    } else {
+      buildPattern2();
+    }
+
+    totalBlue = countBlue();
+    playerR = ROWS - 1;
+    playerC = 0;
+
+    // Find a safe starting position
+    if (grid[playerR][playerC] === TILE.RED || grid[playerR][playerC] === TILE.BLUE) {
+      // search for an empty or green cell on bottom row
+      for (let c = 0; c < COLS; c++) {
+        if (grid[ROWS-1][c] === TILE.EMPTY || grid[ROWS-1][c] === TILE.GREEN) {
+          playerC = c; break;
+        }
+      }
+    }
+    grid[playerR][playerC] = TILE.EMPTY; // clear starting cell
+    prevR = playerR; prevC = playerC;
+
+    document.getElementById('hud').style.display = 'flex';
+    hideOverlay();
+    updateHUD();
+    renderGrid();
+  }
+
+  // ═══════════════════════════════════════════
+  // PATTERN 1
+  // ═══════════════════════════════════════════
+  function buildPattern1() {
+    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(TILE.EMPTY));
+
+    // Top row = all blue
+    for (let c = 0; c < COLS; c++) grid[0][c] = TILE.BLUE;
+
+    // Green border on left col 1, right col COLS-2, and bottom row
+    for (let r = 0; r < ROWS; r++) {
+      if (1 < COLS) grid[r][1] = TILE.GREEN;
+      if (COLS - 2 >= 0) grid[r][COLS - 2] = TILE.GREEN;
+    }
+    for (let c = 0; c < COLS; c++) grid[ROWS - 1][c] = TILE.GREEN;
+
+    // 2x2 Red cluster in center, surrounded by green border
+    const centerR = Math.floor(ROWS / 2) - 1;
+    const centerC = Math.floor(COLS / 2) - 1;
+    for (let dr = -1; dr <= 2; dr++) {
+      for (let dc = -1; dc <= 2; dc++) {
+        const r = centerR + dr, c = centerC + dc;
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+          if (dr >= 0 && dr <= 1 && dc >= 0 && dc <= 1) {
+            grid[r][c] = TILE.RED;
+          } else {
+            grid[r][c] = TILE.GREEN;
+          }
+        }
+      }
+    }
+
+    // 1x4 vertical Red cluster on far right edge, halfway down
+    const startR = Math.floor(ROWS / 2) - 2;
+    for (let i = 0; i < 4; i++) {
+      const r = startR + i;
+      if (r >= 0 && r < ROWS) grid[r][COLS - 1] = TILE.RED;
+    }
+
+    // Scatter 10-15 blue tiles randomly in empty space
+    const scatterCount = 10 + Math.floor(Math.random() * 6);
+    let placed = 0, attempts = 0;
+    while (placed < scatterCount && attempts < 500) {
+      const r = Math.floor(Math.random() * ROWS);
+      const c = Math.floor(Math.random() * COLS);
+      if (grid[r][c] === TILE.EMPTY && !(r === ROWS - 1 && c === 0)) {
+        grid[r][c] = TILE.BLUE;
+        placed++;
+      }
+      attempts++;
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // PATTERN 2 – Maze
+  // ═══════════════════════════════════════════
+  function buildPattern2() {
+    // Start with all green (walls)
+    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(TILE.GREEN));
+
+    // Carve maze paths using recursive backtracking on odd cells
+    const visited = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+
+    function carve(r, c) {
+      visited[r][c] = true;
+      grid[r][c] = TILE.EMPTY;
+      const dirs = shuffle([[0,2],[0,-2],[2,0],[-2,0]]);
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && !visited[nr][nc]) {
+          // carve the wall between
+          grid[r + dr/2][c + dc/2] = TILE.EMPTY;
+          carve(nr, nc);
+        }
+      }
+    }
+
+    // Start carving from (1,1)
+    carve(1, 1);
+
+    // Ensure bottom-left is accessible
+    grid[ROWS - 1][0] = TILE.EMPTY;
+    grid[ROWS - 2][0] = TILE.EMPTY;
+
+    // Scatter blue points in empty paths
+    let blueCount = 0;
+    const targetBlue = 12 + Math.floor(Math.random() * 8);
+    let attempts = 0;
+    while (blueCount < targetBlue && attempts < 500) {
+      const r = Math.floor(Math.random() * ROWS);
+      const c = Math.floor(Math.random() * COLS);
+      if (grid[r][c] === TILE.EMPTY && !(r === ROWS - 1 && c === 0)) {
+        grid[r][c] = TILE.BLUE;
+        blueCount++;
+      }
+      attempts++;
+    }
+
+    // Place red tiles at choke points
+    const redCount = 4 + Math.floor(Math.random() * 4);
+    let redPlaced = 0;
+    attempts = 0;
+    while (redPlaced < redCount && attempts < 300) {
+      const r = Math.floor(Math.random() * ROWS);
+      const c = Math.floor(Math.random() * COLS);
+      if (grid[r][c] === TILE.EMPTY && !(r === ROWS - 1 && c === 0)) {
+        grid[r][c] = TILE.RED;
+        redPlaced++;
+      }
+      attempts++;
+    }
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // ═══════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════
+  function renderGrid() {
+    const container = document.getElementById('gridContainer');
+    const maxCellSize = Math.min(
+      Math.floor((window.innerWidth - 60) / COLS),
+      Math.floor((window.innerHeight - 320) / ROWS),
+      40
+    );
+    const cellSize = Math.max(maxCellSize, 18);
+
+    container.style.gridTemplateColumns = `repeat(${COLS}, ${cellSize}px)`;
+    container.style.gridTemplateRows = `repeat(${ROWS}, ${cellSize}px)`;
+    container.innerHTML = '';
+
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+
+        const idx = r * COLS + c;
+
+        if (r === playerR && c === playerC) {
+          cell.classList.add('cell-player');
+          cell.textContent = '★';
+        } else {
+          switch (grid[r][c]) {
+            case TILE.BLUE:  cell.classList.add('cell-blue'); break;
+            case TILE.RED:   cell.classList.add('cell-red'); break;
+            case TILE.GREEN: cell.classList.add('cell-green'); break;
+            default:         cell.classList.add('cell-empty'); cell.textContent = idx; break;
+          }
+        }
+
+        // Highlight adjacent cells
+        if (isAdjacent(r, c) && !gameOver) {
+          cell.classList.add('cell-adjacent');
+        }
+
+        cell.addEventListener('click', () => handleMove(r, c));
+        container.appendChild(cell);
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // MOVEMENT
+  // ═══════════════════════════════════════════
+  function isAdjacent(r, c) {
+    return (Math.abs(r - playerR) + Math.abs(c - playerC)) === 1;
+  }
+
+  function handleMove(r, c) {
+    if (gameOver) return;
+    if (!isAdjacent(r, c)) return;
+
+    if (!gameStarted) {
+      gameStarted = true;
+      startTimer();
+    }
+
+    const tile = grid[r][c];
+
+    if (tile === TILE.RED) {
+      // Flash the cell
+      const cellEl = document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+      if (cellEl) {
+        cellEl.classList.add('cell-flash');
+        setTimeout(() => cellEl.classList.remove('cell-flash'), 600);
+      }
+      lives--;
+      updateHUD();
+      if (lives <= 0) { endGame(false); }
+      return; // player stays at previous position
+    }
+
+    prevR = playerR;
+    prevC = playerC;
+    playerR = r;
+    playerC = c;
+
+    if (tile === TILE.BLUE) {
+      score++;
+      grid[r][c] = TILE.EMPTY;
+    }
+
+    updateHUD();
+    renderGrid();
+
+    // Check win
+    if (score >= totalBlue) {
+      if (currentLevel === 1) {
+        // Transition to pattern 2
+        showLevelComplete();
+      } else {
+        endGame(true);
+      }
+    }
+  }
+
+  // Arrow key support
+  document.addEventListener('keydown', (e) => {
+    if (gameOver) return;
+    let nr = playerR, nc = playerC;
+    switch (e.key) {
+      case 'ArrowUp':    nr--; break;
+      case 'ArrowDown':  nr++; break;
+      case 'ArrowLeft':  nc--; break;
+      case 'ArrowRight': nc++; break;
+      default: return;
+    }
+    e.preventDefault();
+    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+      handleMove(nr, nc);
+    }
+  });
+
+  // ═══════════════════════════════════════════
+  // TIMER
+  // ═══════════════════════════════════════════
+  function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateHUD();
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        endGame(false);
+      }
+    }, 1000);
+  }
+
+  // ═══════════════════════════════════════════
+  // HUD
+  // ═══════════════════════════════════════════
+  function updateHUD() {
+    // Lives as hearts
+    const heartsStr = '❤'.repeat(Math.max(lives, 0)) + '🖤'.repeat(Math.max(5 - lives, 0));
+    document.getElementById('hudLives').innerHTML = `<span class="hearts">${heartsStr}</span>`;
+
+    // Timer
+    const mins = Math.floor(timeLeft / 60);
+    const secs = String(timeLeft % 60).padStart(2, '0');
+    const timerEl = document.getElementById('hudTimer');
+    timerEl.textContent = `${mins}:${secs}`;
+    timerEl.style.color = timeLeft <= 10 ? 'var(--red)' : 'var(--gold)';
+
+    // Score
+    document.getElementById('hudScore').textContent = `${score} / ${totalBlue}`;
+
+    // Level
+    document.getElementById('hudLevel').textContent = currentLevel === 1 ? 'Pattern 1' : 'Pattern 2';
+  }
+
+  function countBlue() {
+    let count = 0;
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (grid[r][c] === TILE.BLUE) count++;
+    return count;
+  }
+
+  // ═══════════════════════════════════════════
+  // END GAME / LEVEL TRANSITION
+  // ═══════════════════════════════════════════
+  function endGame(won) {
+    gameOver = true;
+    clearInterval(timerInterval);
+    renderGrid(); // re-render to remove adjacency highlights
+
+    const title = document.getElementById('overlayTitle');
+    const msg = document.getElementById('overlayMsg');
+    const btn = document.getElementById('overlayBtn');
+
+    if (won) {
+      title.className = 'win-text';
+      title.textContent = '🏆 YOU WIN!';
+      msg.textContent = `All ${totalBlue} points collected! Final Score: ${score}`;
+    } else {
+      title.className = 'lose-text';
+      title.textContent = '💀 GAME OVER';
+      msg.textContent = lives <= 0 ? 'You ran out of lives!' : 'Time\'s up!';
+    }
+    btn.textContent = 'PLAY AGAIN';
+    btn.onclick = playAgain;
+    showOverlay();
+  }
+
+  function showLevelComplete() {
+    clearInterval(timerInterval);
+    gameOver = true;
+
+    const title = document.getElementById('overlayTitle');
+    const msg = document.getElementById('overlayMsg');
+    const btn = document.getElementById('overlayBtn');
+
+    title.className = 'level-text';
+    title.textContent = '⚡ LEVEL COMPLETE!';
+    msg.textContent = 'Pattern 1 cleared! Get ready for the maze...';
+    btn.textContent = 'CONTINUE';
+    btn.onclick = () => {
+      currentLevel = 2;
+      score = 0;
+      timeLeft = 30;
+      gameStarted = false;
+      gameOver = false;
+      buildPattern2();
+      totalBlue = countBlue();
+      playerR = ROWS - 1; playerC = 0;
+      if (grid[playerR][playerC] !== TILE.EMPTY && grid[playerR][playerC] !== TILE.GREEN) {
+        for (let c = 0; c < COLS; c++) {
+          if (grid[ROWS-1][c] === TILE.EMPTY || grid[ROWS-1][c] === TILE.GREEN) {
+            playerC = c; break;
+          }
+        }
+      }
+      grid[playerR][playerC] = TILE.EMPTY;
+      prevR = playerR; prevC = playerC;
+      hideOverlay();
+      updateHUD();
+      renderGrid();
+    };
+    showOverlay();
+  }
+
+  function showOverlay() { document.getElementById('overlay').classList.add('visible'); }
+  function hideOverlay() { document.getElementById('overlay').classList.remove('visible'); }
+
+  function playAgain() {
+    currentLevel = currentPattern;
+    hideOverlay();
+    resetGame();
+  }
+
+  // ═══════════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════════
+  generateGrid();
+</script>
+</body>
+</html>
