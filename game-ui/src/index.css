@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark: #121212;
+  --color-panel: #282828;
+  --color-accentBlue: #42e2ff;
+  --color-accentGreen: #8df864;
+  --color-accentRed: #ff3a3a;
+  
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-dark text-white font-sans antialiased overflow-hidden select-none m-0 p-0;
+  }
+}
+
+@layer utilities {
+  .chamfered-border {
+    /* Create a chamfered effect (cut corners) using clip-path */
+    clip-path: polygon(
+      15px 0, 
+      calc(100% - 15px) 0, 
+      100% 15px, 
+      100% calc(100% - 15px), 
+      calc(100% - 15px) 100%, 
+      15px 100%, 
+      0 calc(100% - 15px), 
+      0 15px
+    );
+  }
+  
+  .chamfered-border-sm {
+    clip-path: polygon(
+      8px 0, 
+      calc(100% - 8px) 0, 
+      100% 8px, 
+      100% calc(100% - 8px), 
+      calc(100% - 8px) 100%, 
+      8px 100%, 
+      0 calc(100% - 8px), 
+      0 8px
+    );
+  }
+}
