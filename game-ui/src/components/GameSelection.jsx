@@ -72,22 +72,21 @@ export default function GameSelection({ onSelectGame }) {
           }}
           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex % games.length)}
           centeredSlides={true}
-          slidesPerView={'auto'}
+          slidesPerView={3}
           loop={true}
-          loopAdditionalSlides={3}
-          spaceBetween={40}
+          spaceBetween={30}
           grabCursor={true}
           slideToClickedSlide={true}
           speed={600}
           mousewheel={{ forceToAxis: true }}
           modules={[Navigation, Mousewheel]}
-          className="w-full py-8 !overflow-visible"
+          className="w-full py-8"
         >
-          {[...games, ...games].map((game, index) => (
-            <SwiperSlide key={`${game.id}-${index}`} className="!w-auto">
+          {[...games, ...games, ...games].map((game, index) => (
+            <SwiperSlide key={`slide-${index}`}>
               {({ isActive }) => (
                 <div 
-                  className={`w-[800px] h-[450px] max-w-[85vw] mx-auto transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                  className={`h-[450px] transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
                     isActive ? 'scale-100 z-20 shadow-[0_15px_60px_rgba(66,226,255,0.4)]' : 'scale-[0.85] z-0 shadow-2xl'
                   }`}
                 >
@@ -103,7 +102,6 @@ export default function GameSelection({ onSelectGame }) {
                       variants={{ active: { scale: 1.02 }, inactive: { scale: 1 } }}
                       transition={{ duration: 0.6, ease: "easeOut" }}
                     />
-                    {/* Subtle Overlay for contrast */}
                     {!isActive && <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] pointer-events-none" />}
                     {isActive && <div className="absolute inset-0 border-[2px] border-white/10 z-20 pointer-events-none mix-blend-overlay" />}
                   </motion.div>
