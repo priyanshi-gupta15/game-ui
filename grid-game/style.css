@@ -52,12 +52,13 @@ body::after {
   font-family: 'Orbitron', sans-serif;
   font-weight: 900;
   font-size: clamp(1.6rem, 4vw, 2.8rem);
-  background: linear-gradient(135deg, var(--blue) 0%, var(--green) 50%, var(--gold) 100%);
+  background: linear-gradient(135deg, var(--blue) 0%, var(--green) 40%, var(--white) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  filter: drop-shadow(0 0 20px var(--blue-glow));
+  filter: drop-shadow(0 0 15px var(--blue-glow)) drop-shadow(0 0 5px rgba(255,255,255,0.5));
 }
 .game-header .subtitle {
   color: var(--muted);
@@ -321,11 +322,11 @@ body::after {
 }
 
 .cell-flash {
-  animation: flash-danger 0.12s linear 5 !important;
+  animation: flash-danger 0.1s linear 6 !important;
 }
 @keyframes flash-danger {
-  0%, 100% { background: var(--red); }
-  50% { background: #ffffff; }
+  0%, 100% { background: var(--red); box-shadow: 0 0 20px var(--red-glow); }
+  50% { background: #ffffff; box-shadow: 0 0 30px #ffffff, 0 0 100px #ffffff; transform: scale(1.1); }
 }
 
 .cell-collected {

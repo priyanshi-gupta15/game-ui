@@ -419,13 +419,14 @@ function showLevelComplete() {
   icon.textContent = '⚡';
   title.className = 'lvl-text';
   title.textContent = 'LEVEL COMPLETE!';
-  msg.textContent = 'Diamond field cleared! Entering the maze...';
+  msg.textContent = 'Diamond field cleared! Entering the maze in 2 seconds...';
   stats.innerHTML = `
     <div class="overlay-stat"><div class="overlay-stat-val">${score}</div><div class="overlay-stat-label">Points</div></div>
     <div class="overlay-stat"><div class="overlay-stat-val">${lives}</div><div class="overlay-stat-label">Lives Left</div></div>
   `;
-  btn.textContent = 'CONTINUE →';
-  btn.onclick = () => {
+  btn.textContent = 'CONTINUE NOW →';
+  
+  const transition = () => {
     applyGridFade(() => {
       currentLevel = 2;
       score = 0; timeLeft = 30;
@@ -441,7 +442,16 @@ function showLevelComplete() {
       renderGrid();
     });
   };
+
+  btn.onclick = transition;
   showOverlay();
+
+  // Automatic transition after 2 seconds
+  setTimeout(() => {
+    if (gameOver && currentLevel === 1) {
+      transition();
+    }
+  }, 2000);
 }
 
 function showOverlay() { document.getElementById('overlay').classList.add('visible'); }
